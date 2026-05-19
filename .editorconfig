@@ -1,0 +1,110 @@
+root = true
+
+# Unreal Engine naming convention .editorconfig
+# Вариант C — полные правила именования (тип + переменные + функции)
+# Этот файл активирует проверку соглашения об именовании Unreal Engine в Visual Studio.
+# Для C++ секция содержит человеко-читаемые правила, которые расширение UE использует как рекомендации.
+
+[*.{h,hh,hpp,c,cpp,cc,cxx}]
+# C++ (Unreal Engine) — правила (человеко-читаемые):
+# - Классы UObject: префикс `U` (например: `UHealthComponent`)
+# - Акторы: префикс `A` (например: `APlayerCharacter`)
+# - Структуры: префикс `F` (например: `FPlayerStats`)
+# - Интерфейсы: префикс `I` (например: `IMyInterface`)
+# - Шаблоны (templates): префикс `T` (например: `TArray<int32>`)
+# - Перечисления: префикс `E` (например: `EWeaponType`)
+# - Функции / методы: PascalCase (`GetHealth()`)
+# - Локальные переменные: lowerCamelCase (`currentHealth`)
+# - Члены класса, свойства (UPROPERTY): PascalCase (`Health`) или с префиксом `b` для булевых (`bIsAlive`)
+# - Константы: ALL_CAPS с `_` (`MAX_HEALTH`)
+# - Файлы: имя файла соответствует основному классу (`MyActor.h` / `MyActor.cpp`)
+#
+# Примечание: Visual Studio/Unreal расширение использует эту секцию как маркер. Конкретные проверки
+# для C++ реализуются внутри расширения; здесь важно присутствие описания и примеров.
+
+# Машиночитаемые определения для расширений (популярный формат, распознаваемый некоторыми инструментами):
+unreal_naming.enabled = true
+unreal_naming.class_prefix.uobject = U
+unreal_naming.class_prefix.actor = A
+unreal_naming.class_prefix.struct = F
+unreal_naming.class_prefix.interface = I
+unreal_naming.class_prefix.template = T
+unreal_naming.class_prefix.enum = E
+unreal_naming.bool_prefix = b
+unreal_naming.method_style = pascal_case
+unreal_naming.local_variable_style = camel_case
+unreal_naming.constant_style = all_upper
+
+
+[*.cs]
+# C# правила для утилит/инструментов (машинно-проверяемые через dotnet_naming_*).
+
+# 1) Интерфейсы — должны начинаться с префикса 'I'
+dotnet_naming_rule.interfaces_should_start_with_I.severity = warning
+dotnet_naming_rule.interfaces_should_start_with_I.symbols = interfaces
+dotnet_naming_rule.interfaces_should_start_with_I.style = prefix_I
+
+dotnet_naming_symbols.interfaces.applicable_kinds = interface
+dotnet_naming_symbols.interfaces.applicable_accessibilities = *
+
+dotnet_naming_style.prefix_I.required_prefix = I
+dotnet_naming_style.prefix_I.capitalization = pascal_case
+
+# 2) Типы (классы, структуры, перечисления, делегаты) — PascalCase
+dotnet_naming_rule.types_should_be_pascal.severity = warning
+dotnet_naming_rule.types_should_be_pascal.symbols = types
+dotnet_naming_rule.types_should_be_pascal.style = pascal_style
+
+dotnet_naming_symbols.types.applicable_kinds = class, struct, enum, delegate
+dotnet_naming_symbols.types.applicable_accessibilities = *
+
+dotnet_naming_style.pascal_style.capitalization = pascal_case
+
+# 3) Методы — PascalCase
+dotnet_naming_rule.methods_should_be_pascal.severity = warning
+dotnet_naming_rule.methods_should_be_pascal.symbols = methods
+dotnet_naming_rule.methods_should_be_pascal.style = pascal_style
+
+dotnet_naming_symbols.methods.applicable_kinds = method
+dotnet_naming_symbols.methods.applicable_accessibilities = *
+
+# 4) Публичные свойства и поля — PascalCase
+dotnet_naming_rule.public_members_pascal.severity = warning
+dotnet_naming_rule.public_members_pascal.symbols = public_members
+dotnet_naming_rule.public_members_pascal.style = pascal_style
+
+dotnet_naming_symbols.public_members.applicable_kinds = property, field
+dotnet_naming_symbols.public_members.applicable_accessibilities = public, internal
+
+# 5) Приватные поля — _camelCase (с нижним подчёркиванием)
+dotnet_naming_rule.private_fields_underscore_camel.severity = warning
+dotnet_naming_rule.private_fields_underscore_camel.symbols = private_fields
+dotnet_naming_rule.private_fields_underscore_camel.style = underscore_camel
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_style.underscore_camel.required_prefix = _
+dotnet_naming_style.underscore_camel.capitalization = camel_case
+
+# 6) Локальные переменные — camelCase
+dotnet_naming_rule.locals_camel.severity = warning
+dotnet_naming_rule.locals_camel.symbols = locals
+dotnet_naming_rule.locals_camel.style = camel_style
+
+dotnet_naming_symbols.locals.applicable_kinds = local
+dotnet_naming_symbols.locals.applicable_accessibilities = *
+
+dotnet_naming_style.camel_style.capitalization = camel_case
+
+# 7) Константы — ALL_CAPS
+dotnet_naming_rule.constants_allcaps.severity = warning
+dotnet_naming_rule.constants_allcaps.symbols = constants
+dotnet_naming_rule.constants_allcaps.style = allcaps_style
+
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.applicable_accessibilities = public
+
+dotnet_naming_style.allcaps_style.capitalization = all_upper
+
+# Конец файла
