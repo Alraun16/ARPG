@@ -1,4 +1,5 @@
 ﻿#include "Characters/MainPlayerCharacter.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 // ---------------------------
 // Конструктор
@@ -6,6 +7,7 @@
 AMainPlayerCharacter::AMainPlayerCharacter()
 {	
 	bReplicates = true;
+	SetReplicateMovement(true);
 	
 	// Включаем тики
 	PrimaryActorTick.bCanEverTick = true;
