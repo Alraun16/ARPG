@@ -13,4 +13,7 @@ public:
 	AARPGGameMode();
 
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+
+private:
+	int32 NextPlayerNameIndex = 0;
 };

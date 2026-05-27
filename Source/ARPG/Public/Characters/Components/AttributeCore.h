@@ -47,6 +47,7 @@ public:
     void SetActiveRegen(float NewActiveRegen);
     
     void ChangeCurrent(float Value);
+    void SetValuesFromReplication(float NewCurrent, float NewMax, float NewBuff, float NewPassiveRegen, float NewActiveRegen);
     void ApplyRegen();
 };
 

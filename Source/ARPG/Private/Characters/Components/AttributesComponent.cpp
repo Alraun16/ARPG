@@ -1,5 +1,6 @@
 ﻿#include "Characters/Components/AttributesComponent.h"
 #include "Characters/Components/AttributeCore.h"
+#include "Net/UnrealNetwork.h"
 
 
 // ---------------------------
@@ -50,6 +51,10 @@ void UAttributesComponent::BeginPlay()
 	HealthViewModel->Init(Health);
 	StaminaViewModel->Init(Stamina);
 	SpiritViewModel->Init(SpiritEnergy);
+
+	Health->OnValuesChanged.AddDynamic(this, &UAttributesComponent::HandleAttributeValuesChanged);
+	Stamina->OnValuesChanged.AddDynamic(this, &UAttributesComponent::HandleAttributeValuesChanged);
+	SpiritEnergy->OnValuesChanged.AddDynamic(this, &UAttributesComponent::HandleAttributeValuesChanged);
 	
 	// --------------------
 	// Подписка на нулевой Current
@@ -57,6 +62,17 @@ void UAttributesComponent::BeginPlay()
 	Health->OnCurrentZero.AddDynamic(this, &UAttributesComponent::HandleHealthZero);
 	Stamina->OnCurrentZero.AddDynamic(this, &UAttributesComponent::HandleStaminaZero);
 	SpiritEnergy->OnCurrentZero.AddDynamic(this, &UAttributesComponent::HandleSpiritZero);
+
+	if (GetOwner() && GetOwner()->HasAuthority())
+	{
+		RefreshReplicatedAttributeData();
+	}
+	else
+	{
+		OnRep_HealthData();
+		OnRep_StaminaData();
+		OnRep_SpiritEnergyData();
+	}
 }
 
 // ---------------------------
@@ -86,16 +102,33 @@ void UAttributesComponent::TickComponent(
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	if (!GetOwner() || !GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
 	TimeAccumulator += DeltaTime;
 
 	while (TimeAccumulator >= TickInterval)
 	{
-		if (Health)       Health->ApplyRegen();
+		if (Health)
+		{
+			Health->ApplyRegen();
+		}
 		if (Stamina)      Stamina->ApplyRegen();
 		if (SpiritEnergy) SpiritEnergy->ApplyRegen();
 
 		TimeAccumulator -= TickInterval;
 	}
+}
+
+void UAttributesComponent::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(UAttributesComponent, HealthData);
+	DOREPLIFETIME(UAttributesComponent, StaminaData);
+	DOREPLIFETIME(UAttributesComponent, SpiritEnergyData);
 }
 
 // --------------------
@@ -114,4 +147,140 @@ void UAttributesComponent::HandleStaminaZero()
 void UAttributesComponent::HandleSpiritZero()
 {
 	OnZeroSpiritEnergy.Broadcast();
+}
+
+
+// --------------------
+// Apply Attribute Delta
+// --------------------
+bool UAttributesComponent::ApplyAttributeDelta(EARPGAttributeType AttributeType, float Delta)
+{
+	if (GetOwner() && !GetOwner()->HasAuthority())
+	{
+		if (GetOwner()->GetLocalRole() == ROLE_AutonomousProxy)
+		{
+			ServerApplyAttributeDelta(AttributeType, Delta);
+			return true;
+		}
+
+		return false;
+	}
+
+	return ApplyAttributeDeltaInternal(AttributeType, Delta);
+}
+
+bool UAttributesComponent::ApplyAttributeDeltaInternal(EARPGAttributeType AttributeType, float Delta)
+{
+	switch (AttributeType)
+	{
+	case EARPGAttributeType::Health:
+		if (Health)
+		{
+			const float OldValue = Health->Current;
+
+			Health->ChangeCurrent(Delta);
+
+			UE_LOG(LogTemp, Warning, TEXT("ApplyAttributeDelta Health | Old=%f | Delta=%f | New=%f"),
+				OldValue,
+				Delta,
+				Health->Current
+			);
+
+			RefreshReplicatedAttributeData();
+			return true;
+		}
+		break;
+
+	case EARPGAttributeType::Stamina:
+		if (Stamina)
+		{
+			Stamina->ChangeCurrent(Delta);
+			RefreshReplicatedAttributeData();
+			return true;
+		}
+		break;
+
+	case EARPGAttributeType::SpiritEnergy:
+		if (SpiritEnergy)
+		{
+			SpiritEnergy->ChangeCurrent(Delta);
+			RefreshReplicatedAttributeData();
+			return true;
+		}
+		break;
+
+	default:
+		break;
+	}
+
+	return false;
+}
+
+void UAttributesComponent::ServerApplyAttributeDelta_Implementation(EARPGAttributeType AttributeType, float Delta)
+{
+	ApplyAttributeDeltaInternal(AttributeType, Delta);
+}
+
+FARPGAttributeReplicationData UAttributesComponent::MakeReplicationData(const UAttributeCore* Attribute) const
+{
+	FARPGAttributeReplicationData ReplicationData;
+
+	if (Attribute)
+	{
+		ReplicationData.Current = Attribute->Current;
+		ReplicationData.Max = Attribute->Max;
+		ReplicationData.Buff = Attribute->Buff;
+		ReplicationData.PassiveRegen = Attribute->PassiveRegen;
+		ReplicationData.ActiveRegen = Attribute->ActiveRegen;
+	}
+
+	return ReplicationData;
+}
+
+void UAttributesComponent::RefreshReplicatedAttributeData()
+{
+	if (!GetOwner() || !GetOwner()->HasAuthority())
+	{
+		return;
+	}
+
+	HealthData = MakeReplicationData(Health);
+	StaminaData = MakeReplicationData(Stamina);
+	SpiritEnergyData = MakeReplicationData(SpiritEnergy);
+}
+
+void UAttributesComponent::ApplyReplicatedAttributeData(UAttributeCore* Attribute, const FARPGAttributeReplicationData& ReplicationData) const
+{
+	if (!Attribute)
+	{
+		return;
+	}
+
+	Attribute->SetValuesFromReplication(
+		ReplicationData.Current,
+		ReplicationData.Max,
+		ReplicationData.Buff,
+		ReplicationData.PassiveRegen,
+		ReplicationData.ActiveRegen
+	);
+}
+
+void UAttributesComponent::OnRep_HealthData()
+{
+	ApplyReplicatedAttributeData(Health, HealthData);
+}
+
+void UAttributesComponent::OnRep_StaminaData()
+{
+	ApplyReplicatedAttributeData(Stamina, StaminaData);
+}
+
+void UAttributesComponent::OnRep_SpiritEnergyData()
+{
+	ApplyReplicatedAttributeData(SpiritEnergy, SpiritEnergyData);
+}
+
+void UAttributesComponent::HandleAttributeValuesChanged(float Current, float Max, float Buff)
+{
+	RefreshReplicatedAttributeData();
 }

@@ -39,11 +39,13 @@ void UAttributeCore::SetBuff(float NewBuff)
 void UAttributeCore::SetPassiveRegen(float NewPassiveRegen)
 {
 	PassiveRegen = NewPassiveRegen;
+	OnValuesChanged.Broadcast(Current, Max, Buff);
 }
 
 void UAttributeCore::SetActiveRegen(float NewActiveRegen)
 {
 	ActiveRegen = NewActiveRegen;
+	OnValuesChanged.Broadcast(Current, Max, Buff);
 }
 
 void UAttributeCore::ChangeCurrent(float Value)
@@ -56,6 +58,33 @@ void UAttributeCore::ChangeCurrent(float Value)
 		OnValuesChanged.Broadcast(Current, Max, Buff);
 		if (Current <= 0.f)
 			OnCurrentZero.Broadcast();
+	}
+}
+
+void UAttributeCore::SetValuesFromReplication(float NewCurrent, float NewMax, float NewBuff, float NewPassiveRegen, float NewActiveRegen)
+{
+	const bool bWasAboveZero = Current > 0.f;
+	const bool bChanged =
+		!FMath::IsNearlyEqual(Current, NewCurrent) ||
+		!FMath::IsNearlyEqual(Max, NewMax) ||
+		!FMath::IsNearlyEqual(Buff, NewBuff) ||
+		!FMath::IsNearlyEqual(PassiveRegen, NewPassiveRegen) ||
+		!FMath::IsNearlyEqual(ActiveRegen, NewActiveRegen);
+
+	Current = NewCurrent;
+	Max = NewMax;
+	Buff = NewBuff;
+	PassiveRegen = NewPassiveRegen;
+	ActiveRegen = NewActiveRegen;
+
+	if (bChanged)
+	{
+		OnValuesChanged.Broadcast(Current, Max, Buff);
+	}
+
+	if (bWasAboveZero && Current <= 0.f)
+	{
+		OnCurrentZero.Broadcast();
 	}
 }
 
