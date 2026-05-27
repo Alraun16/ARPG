@@ -2,7 +2,29 @@
 #include "DrawDebugHelpers.h"
 #include "Components/BoxComponent.h"
 #include "Characters/MainPlayerCharacter.h"
-#include "Characters/Components/AttributesComponent.h"
+#include "AbilitySystemComponent.h"
+#include "GAS/Attributes/CoreCharacterAttributeSet.h"
+
+namespace
+{
+	FGameplayAttribute ResolveTargetGameplayAttribute(EAttributeEffectVolumeTarget TargetAttribute)
+	{
+		switch (TargetAttribute)
+		{
+		case EAttributeEffectVolumeTarget::Health:
+			return UCoreCharacterAttributeSet::GetHealthAttribute();
+
+		case EAttributeEffectVolumeTarget::Stamina:
+			return UCoreCharacterAttributeSet::GetStaminaAttribute();
+
+		case EAttributeEffectVolumeTarget::SpiritEnergy:
+			return UCoreCharacterAttributeSet::GetSpiritEnergyAttribute();
+
+		default:
+			return FGameplayAttribute();
+		}
+	}
+}
 
 AAttributeEffectVolume::AAttributeEffectVolume()
 {
@@ -73,18 +95,30 @@ void AAttributeEffectVolume::Tick(float DeltaTime)
 			continue;
 		}
 
-		UAttributesComponent* AttributesComponent = Character->FindComponentByClass<UAttributesComponent>();
+		UAbilitySystemComponent* AbilitySystemComponent = Character->GetAbilitySystemComponent();
 
-		if (!AttributesComponent)
+		if (!AbilitySystemComponent)
 		{
 			continue;
 		}
 
-		const bool bApplied = AttributesComponent->ApplyAttributeDelta(TargetAttribute, Delta);
+		const FGameplayAttribute GameplayAttribute = ResolveTargetGameplayAttribute(TargetAttribute);
 
-		UE_LOG(LogTemp, Warning, TEXT("AttributeVolume ApplyAttributeDelta | Character=%s | Applied=%d"),
+		if (!GameplayAttribute.IsValid())
+		{
+			continue;
+		}
+
+		AbilitySystemComponent->ApplyModToAttribute(
+			GameplayAttribute,
+			EGameplayModOp::Additive,
+			Delta
+		);
+
+		UE_LOG(LogTemp, Warning, TEXT("AttributeVolume ApplyModToAttribute | Character=%s | TargetAttribute=%d | Delta=%f"),
 			*GetNameSafe(Character),
-			bApplied
+			static_cast<int32>(TargetAttribute),
+			Delta
 		);
 	}
 }

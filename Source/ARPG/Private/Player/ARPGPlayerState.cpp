@@ -9,7 +9,7 @@ AARPGPlayerState::AARPGPlayerState()
 	AbilitySystemComponent->SetIsReplicated(true);
 	AbilitySystemComponent->SetReplicationMode(EGameplayEffectReplicationMode::Mixed);
 
-	CoreCharacterAttributeSet = CreateDefaultSubobject<UCoreCharacterAttributeSet>(TEXT("AttributeSet"));
+	CoreCharacterAttributeSet = CreateDefaultSubobject<UCoreCharacterAttributeSet>(TEXT("CoreCharacterAttributeSet"));
 
 	NetUpdateFrequency = 100.f;
 }

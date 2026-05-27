@@ -16,7 +16,7 @@ UCoreCharacterAttributeSet::UCoreCharacterAttributeSet()
 
 	InitHealthRegenPerSecond(0.5f);
 	InitStaminaRegenPerSecond(0.5f);
-	InitSpiritRegenPerSecond(0.5f);
+	InitSpiritEnergyRegenPerSecond(0.5f);
 }
 
 void UCoreCharacterAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
@@ -34,7 +34,7 @@ void UCoreCharacterAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProp
 
 	DOREPLIFETIME_CONDITION_NOTIFY(UCoreCharacterAttributeSet, HealthRegenPerSecond, COND_None, REPNOTIFY_Always);
 	DOREPLIFETIME_CONDITION_NOTIFY(UCoreCharacterAttributeSet, StaminaRegenPerSecond, COND_None, REPNOTIFY_Always);
-	DOREPLIFETIME_CONDITION_NOTIFY(UCoreCharacterAttributeSet, SpiritRegenPerSecond, COND_None, REPNOTIFY_Always);
+	DOREPLIFETIME_CONDITION_NOTIFY(UCoreCharacterAttributeSet, SpiritEnergyRegenPerSecond, COND_None, REPNOTIFY_Always);
 }
 
 void UCoreCharacterAttributeSet::PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue)

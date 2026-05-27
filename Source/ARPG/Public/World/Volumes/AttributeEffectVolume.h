@@ -2,11 +2,18 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "Characters/Components/AttributesComponent.h"
 #include "AttributeEffectVolume.generated.h"
 
 class UBoxComponent;
 class AMainPlayerCharacter;
+
+UENUM(BlueprintType)
+enum class EAttributeEffectVolumeTarget : uint8
+{
+	Health,
+	Stamina,
+	SpiritEnergy
+};
 
 UCLASS()
 class ARPG_API AAttributeEffectVolume : public AActor
@@ -33,7 +40,7 @@ protected:
 	// Attribute Effect Settings
 	// --------------------
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attribute Effect")
-	EARPGAttributeType TargetAttribute = EARPGAttributeType::Health;
+	EAttributeEffectVolumeTarget TargetAttribute = EAttributeEffectVolumeTarget::Health;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Attribute Effect")
 	float DeltaPerSecond = -10.f;
@@ -41,7 +48,7 @@ protected:
 private:
 	UPROPERTY()
 	TSet<AMainPlayerCharacter*> OverlappingCharacters;
-
+	
 	UFUNCTION()
 	void HandleBeginOverlap(
 		UPrimitiveComponent* OverlappedComponent,
