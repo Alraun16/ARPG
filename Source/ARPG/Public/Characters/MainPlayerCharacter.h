@@ -2,28 +2,35 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
-#include "Characters/Components/AttributesComponent.h"
+#include "AbilitySystemInterface.h"
 #include "MainPlayerCharacter.generated.h"
 
+class UAbilitySystemComponent;
+class UGameplayEffect;
 
 UCLASS()
-class ARPG_API AMainPlayerCharacter : public ACharacter
+class ARPG_API AMainPlayerCharacter : public ACharacter, public IAbilitySystemInterface
 {
 	GENERATED_BODY()
 
 public:
-	// Конструктор
 	AMainPlayerCharacter();
 
-	/** Компонент атрибутов (Health, Stamina, Spirit) */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attributes")
-	UAttributesComponent* AttributesComponent;
+	virtual UAbilitySystemComponent* GetAbilitySystemComponent() const override;
 
 protected:
-	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
+	virtual void PossessedBy(AController* NewController) override;
+	virtual void OnRep_PlayerState() override;
 
 public:
-	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+private:
+	UPROPERTY()
+	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
+
+	void InitializeAbilitySystem();
+	void ApplyStartupEffects();
+	void ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass);
 };
