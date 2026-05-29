@@ -77,16 +77,6 @@ void AAttributeEffectVolume::Tick(float DeltaTime)
 	}
 
 	const float Delta = DeltaPerSecond * DeltaTime;
-
-	if (OverlappingCharacters.Num() > 0)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("AttributeVolume Tick | Authority=%d | Count=%d | TargetAttribute=%d | Delta=%f"),
-			HasAuthority(),
-			OverlappingCharacters.Num(),
-			static_cast<int32>(TargetAttribute),
-			Delta
-		);
-	}
 	
 	for (AMainPlayerCharacter* Character : OverlappingCharacters)
 	{
@@ -114,12 +104,7 @@ void AAttributeEffectVolume::Tick(float DeltaTime)
 			EGameplayModOp::Additive,
 			Delta
 		);
-
-		UE_LOG(LogTemp, Warning, TEXT("AttributeVolume ApplyModToAttribute | Character=%s | TargetAttribute=%d | Delta=%f"),
-			*GetNameSafe(Character),
-			static_cast<int32>(TargetAttribute),
-			Delta
-		);
+		
 	}
 }
 
@@ -132,11 +117,6 @@ void AAttributeEffectVolume::HandleBeginOverlap(
 	const FHitResult& SweepResult
 )
 {
-	UE_LOG(LogTemp, Warning, TEXT("AttributeVolume BeginOverlap | Authority=%d | OtherActor=%s | OtherClass=%s"),
-		HasAuthority(),
-		*GetNameSafe(OtherActor),
-		OtherActor ? *OtherActor->GetClass()->GetName() : TEXT("None")
-	);
 	
 	AMainPlayerCharacter* Character = Cast<AMainPlayerCharacter>(OtherActor);
 
@@ -147,10 +127,6 @@ void AAttributeEffectVolume::HandleBeginOverlap(
 
 	OverlappingCharacters.Add(Character);
 	
-	UE_LOG(LogTemp, Warning, TEXT("AttributeVolume added character: %s | Count=%d"),
-		*GetNameSafe(Character),
-		OverlappingCharacters.Num()
-	);
 }
 
 void AAttributeEffectVolume::HandleEndOverlap(

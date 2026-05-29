@@ -180,12 +180,6 @@ bool UAttributesComponent::ApplyAttributeDeltaInternal(EARPGAttributeType Attrib
 
 			Health->ChangeCurrent(Delta);
 
-			UE_LOG(LogTemp, Warning, TEXT("ApplyAttributeDelta Health | Old=%f | Delta=%f | New=%f"),
-				OldValue,
-				Delta,
-				Health->Current
-			);
-
 			RefreshReplicatedAttributeData();
 			return true;
 		}

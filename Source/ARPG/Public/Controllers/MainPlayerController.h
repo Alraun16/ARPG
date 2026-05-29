@@ -12,7 +12,9 @@ class ARPG_API AMainPlayerController : public APlayerController
 
 public:
 	AMainPlayerController();
-
+	
+	virtual void Tick(float DeltaTime) override;
+	
 	UFUNCTION(BlueprintCallable, Category = "Input")
 	void AddDefaultMappingContext();
 
@@ -25,4 +27,7 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Input")
 	int32 DefaultMappingPriority;
+
+private:
+	void DrawDebugCharacterAttributes() const;
 };
