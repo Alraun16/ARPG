@@ -17,7 +17,6 @@ class ARPG_API UCoreCharacterAttributeSet : public UAttributeSet
 	GENERATED_BODY()
 
 public:
-	UCoreCharacterAttributeSet();
 
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 	virtual void PreAttributeChange(const FGameplayAttribute& Attribute, float& NewValue) override;

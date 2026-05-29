@@ -3,22 +3,6 @@
 #include "GameplayEffectExtension.h"
 #include "Net/UnrealNetwork.h"
 
-UCoreCharacterAttributeSet::UCoreCharacterAttributeSet()
-{
-	InitMaxHealth(100.f);
-	InitHealth(50.f);
-
-	InitMaxStamina(100.f);
-	InitStamina(50.f);
-
-	InitMaxSpiritEnergy(100.f);
-	InitSpiritEnergy(50.f);
-
-	InitHealthRegenPerSecond(0.5f);
-	InitStaminaRegenPerSecond(0.5f);
-	InitSpiritEnergyRegenPerSecond(0.5f);
-}
-
 void UCoreCharacterAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);

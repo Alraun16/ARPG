@@ -5,6 +5,8 @@
 #include "Player/ARPGPlayerState.h"
 
 #include "GameplayEffect.h"
+#include "GAS/Attributes/CoreCharacterAttributeSet.h"
+#include "GAS/Effects/CoreCharacterInitAttributesEffect.h"
 #include "GAS/Effects/HealthRegenEffect.h"
 #include "GAS/Effects/StaminaRegenEffect.h"
 #include "GAS/Effects/SpiritEnergyRegenEffect.h"
@@ -62,10 +64,14 @@ void AMainPlayerCharacter::InitializeAbilitySystem()
 	}
 
 	AbilitySystemComponent->InitAbilityActorInfo(ARPGPlayerState, this);
+	BindAttributeChangeDelegates();
+	BroadcastCurrentAttributes();
 }
 
 void AMainPlayerCharacter::ApplyStartupEffects()
-{
+{	
+	ApplyGameplayEffectToSelf(UCoreCharacterInitAttributesEffect::StaticClass());
+	
 	if (!HasAuthority())
 	{
 		return;
@@ -109,4 +115,46 @@ void AMainPlayerCharacter::ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect
 	{
 		AbilitySystemComponent->ApplyGameplayEffectSpecToSelf(*SpecHandle.Data.Get());
 	}
+}
+
+float AMainPlayerCharacter::GetHealth() const
+{
+	return AbilitySystemComponent
+		? AbilitySystemComponent->GetNumericAttribute(UCoreCharacterAttributeSet::GetHealthAttribute())
+		: 0.f;
+}
+
+float AMainPlayerCharacter::GetMaxHealth() const
+{
+	return AbilitySystemComponent
+		? AbilitySystemComponent->GetNumericAttribute(UCoreCharacterAttributeSet::GetMaxHealthAttribute())
+		: 0.f;
+}
+
+float AMainPlayerCharacter::GetStamina() const
+{
+	return AbilitySystemComponent
+		? AbilitySystemComponent->GetNumericAttribute(UCoreCharacterAttributeSet::GetStaminaAttribute())
+		: 0.f;
+}
+
+float AMainPlayerCharacter::GetMaxStamina() const
+{
+	return AbilitySystemComponent
+		? AbilitySystemComponent->GetNumericAttribute(UCoreCharacterAttributeSet::GetMaxStaminaAttribute())
+		: 0.f;
+}
+
+float AMainPlayerCharacter::GetSpiritEnergy() const
+{
+	return AbilitySystemComponent
+		? AbilitySystemComponent->GetNumericAttribute(UCoreCharacterAttributeSet::GetSpiritEnergyAttribute())
+		: 0.f;
+}
+
+float AMainPlayerCharacter::GetMaxSpiritEnergy() const
+{
+	return AbilitySystemComponent
+		? AbilitySystemComponent->GetNumericAttribute(UCoreCharacterAttributeSet::GetMaxSpiritEnergyAttribute())
+		: 0.f;
 }
