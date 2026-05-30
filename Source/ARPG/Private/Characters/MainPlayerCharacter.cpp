@@ -51,6 +51,11 @@ void AMainPlayerCharacter::OnRep_PlayerState()
 
 void AMainPlayerCharacter::InitializeAbilitySystem()
 {
+	if (bAbilitySystemInitialized)
+	{
+		return;
+	}
+
 	AARPGPlayerState* ARPGPlayerState = GetPlayerState<AARPGPlayerState>();
 	if (!ARPGPlayerState)
 	{
@@ -64,14 +69,17 @@ void AMainPlayerCharacter::InitializeAbilitySystem()
 	}
 
 	AbilitySystemComponent->InitAbilityActorInfo(ARPGPlayerState, this);
+
+	bAbilitySystemInitialized = true;
+
 	BindAttributeChangeDelegates();
 	BroadcastCurrentAttributes();
+
+	OnAbilitySystemInitialized.Broadcast();
 }
 
 void AMainPlayerCharacter::ApplyStartupEffects()
 {	
-	ApplyGameplayEffectToSelf(UCoreCharacterInitAttributesEffect::StaticClass());
-	
 	if (!HasAuthority())
 	{
 		return;
@@ -87,7 +95,9 @@ void AMainPlayerCharacter::ApplyStartupEffects()
 	{
 		return;
 	}
-
+	
+	ApplyGameplayEffectToSelf(UCoreCharacterInitAttributesEffect::StaticClass());
+	
 	ApplyGameplayEffectToSelf(UHealthRegenEffect::StaticClass());
 	ApplyGameplayEffectToSelf(UStaminaRegenEffect::StaticClass());
 	ApplyGameplayEffectToSelf(USpiritEnergyRegenEffect::StaticClass());
@@ -157,4 +167,96 @@ float AMainPlayerCharacter::GetMaxSpiritEnergy() const
 	return AbilitySystemComponent
 		? AbilitySystemComponent->GetNumericAttribute(UCoreCharacterAttributeSet::GetMaxSpiritEnergyAttribute())
 		: 0.f;
+}
+
+void AMainPlayerCharacter::BindAttributeChangeDelegates()
+{
+	if (!AbilitySystemComponent)
+	{
+		return;
+	}
+
+	if (!HealthChangedDelegateHandle.IsValid())
+	{
+		HealthChangedDelegateHandle = AbilitySystemComponent
+			->GetGameplayAttributeValueChangeDelegate(UCoreCharacterAttributeSet::GetHealthAttribute())
+			.AddUObject(this, &AMainPlayerCharacter::HandleHealthChanged);
+	}
+
+	if (!MaxHealthChangedDelegateHandle.IsValid())
+	{
+		MaxHealthChangedDelegateHandle = AbilitySystemComponent
+			->GetGameplayAttributeValueChangeDelegate(UCoreCharacterAttributeSet::GetMaxHealthAttribute())
+			.AddUObject(this, &AMainPlayerCharacter::HandleMaxHealthChanged);
+	}
+
+	if (!StaminaChangedDelegateHandle.IsValid())
+	{
+		StaminaChangedDelegateHandle = AbilitySystemComponent
+			->GetGameplayAttributeValueChangeDelegate(UCoreCharacterAttributeSet::GetStaminaAttribute())
+			.AddUObject(this, &AMainPlayerCharacter::HandleStaminaChanged);
+	}
+
+	if (!MaxStaminaChangedDelegateHandle.IsValid())
+	{
+		MaxStaminaChangedDelegateHandle = AbilitySystemComponent
+			->GetGameplayAttributeValueChangeDelegate(UCoreCharacterAttributeSet::GetMaxStaminaAttribute())
+			.AddUObject(this, &AMainPlayerCharacter::HandleMaxStaminaChanged);
+	}
+
+	if (!SpiritEnergyChangedDelegateHandle.IsValid())
+	{
+		SpiritEnergyChangedDelegateHandle = AbilitySystemComponent
+			->GetGameplayAttributeValueChangeDelegate(UCoreCharacterAttributeSet::GetSpiritEnergyAttribute())
+			.AddUObject(this, &AMainPlayerCharacter::HandleSpiritEnergyChanged);
+	}
+
+	if (!MaxSpiritEnergyChangedDelegateHandle.IsValid())
+	{
+		MaxSpiritEnergyChangedDelegateHandle = AbilitySystemComponent
+			->GetGameplayAttributeValueChangeDelegate(UCoreCharacterAttributeSet::GetMaxSpiritEnergyAttribute())
+			.AddUObject(this, &AMainPlayerCharacter::HandleMaxSpiritEnergyChanged);
+	}
+}
+
+void AMainPlayerCharacter::BroadcastCurrentAttributes()
+{
+	OnHealthChanged.Broadcast(GetHealth(), GetMaxHealth());
+	OnStaminaChanged.Broadcast(GetStamina(), GetMaxStamina());
+	OnSpiritEnergyChanged.Broadcast(GetSpiritEnergy(), GetMaxSpiritEnergy());
+}
+
+void AMainPlayerCharacter::HandleHealthChanged(const FOnAttributeChangeData& Data)
+{
+	OnHealthChanged.Broadcast(Data.NewValue, GetMaxHealth());
+}
+
+void AMainPlayerCharacter::HandleMaxHealthChanged(const FOnAttributeChangeData& Data)
+{
+	OnHealthChanged.Broadcast(GetHealth(), Data.NewValue);
+}
+
+void AMainPlayerCharacter::HandleStaminaChanged(const FOnAttributeChangeData& Data)
+{
+	OnStaminaChanged.Broadcast(Data.NewValue, GetMaxStamina());
+}
+
+void AMainPlayerCharacter::HandleMaxStaminaChanged(const FOnAttributeChangeData& Data)
+{
+	OnStaminaChanged.Broadcast(GetStamina(), Data.NewValue);
+}
+
+void AMainPlayerCharacter::HandleSpiritEnergyChanged(const FOnAttributeChangeData& Data)
+{
+	OnSpiritEnergyChanged.Broadcast(Data.NewValue, GetMaxSpiritEnergy());
+}
+
+void AMainPlayerCharacter::HandleMaxSpiritEnergyChanged(const FOnAttributeChangeData& Data)
+{
+	OnSpiritEnergyChanged.Broadcast(GetSpiritEnergy(), Data.NewValue);
+}
+
+bool AMainPlayerCharacter::IsAbilitySystemInitialized() const
+{
+	return bAbilitySystemInitialized;
 }
