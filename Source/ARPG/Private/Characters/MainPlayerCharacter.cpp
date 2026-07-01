@@ -115,6 +115,145 @@ void AMainPlayerCharacter::ApplyStartupEffects()
 	ARPGPlayerState->SetStartupEffectsApplied(true);
 }
 
+void AMainPlayerCharacter::NotifyDamageTaken()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		// Внешний damage source сообщает о damage персонажу.
+		// Конкретный lifecycle passive regen effects остаётся внутри CharacterRegenComponent.
+		CharacterRegenComponent->NotifyDamageTaken();
+	}
+}
+
+void AMainPlayerCharacter::NotifyStaminaSpent()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		// Любая система расхода Stamina сообщает только факт траты.
+		// Длительность и reason-блокировку Stamina regen задаёт CharacterRegenComponent.
+		CharacterRegenComponent->NotifyStaminaSpent();
+	}
+}
+
+void AMainPlayerCharacter::NotifySpiritEnergySpent()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		// Любая ability или effect, потратившая SpiritEnergy, сообщает об этом персонажу.
+		// Это не связано с damage delay и имеет отдельную reason-блокировку.
+		CharacterRegenComponent->NotifySpiritEnergySpent();
+	}
+}
+
+void AMainPlayerCharacter::ResumeHealthRegenNow()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		CharacterRegenComponent->ResumeHealthRegenNow();
+	}
+}
+
+void AMainPlayerCharacter::ResumeStaminaRegenNow()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		CharacterRegenComponent->ResumeStaminaRegenNow();
+	}
+}
+
+void AMainPlayerCharacter::ResumeSpiritEnergyRegenNow()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		CharacterRegenComponent->ResumeSpiritEnergyRegenNow();
+	}
+}
+
+void AMainPlayerCharacter::ResumeAllRegensNow()
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		// Active regen, potion или buff может вернуть passive regens раньше текущих таймеров.
+		CharacterRegenComponent->ResumeAllRegensNow();
+	}
+}
+
+void AMainPlayerCharacter::SetDamageCanBlockHealthRegen(bool bCanBlock)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		CharacterRegenComponent->SetDamageCanBlockHealthRegen(bCanBlock);
+	}
+}
+
+void AMainPlayerCharacter::SetDamageCanBlockStaminaRegen(bool bCanBlock)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		CharacterRegenComponent->SetDamageCanBlockStaminaRegen(bCanBlock);
+	}
+}
+
+void AMainPlayerCharacter::SetDamageCanBlockSpiritEnergyRegen(bool bCanBlock)
+{
+	if (!HasAuthority())
+	{
+		return;
+	}
+
+	if (CharacterRegenComponent)
+	{
+		// Пример будущей "Ментальной устойчивости":
+		// false запрещает damage блокировать SpiritEnergy regen, не трогая другие block reasons.
+		CharacterRegenComponent->SetDamageCanBlockSpiritEnergyRegen(bCanBlock);
+	}
+}
+
 void AMainPlayerCharacter::ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass)
 {
 	if (!AbilitySystemComponent || !EffectClass)

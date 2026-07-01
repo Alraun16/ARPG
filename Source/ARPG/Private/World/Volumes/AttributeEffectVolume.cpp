@@ -105,6 +105,16 @@ void AAttributeEffectVolume::Tick(float DeltaTime)
 			Delta
 		);
 		
+		const bool bAppliedHealthDamage =
+			TargetAttribute == EAttributeEffectVolumeTarget::Health
+			&& Delta < 0.f;
+
+		if (bAppliedHealthDamage)
+		{
+			// AttributeEffectVolume пока остаётся тестовым damage source.
+			// Позже этот сигнал должен переехать в общий GAS damage pipeline.
+			Character->NotifyDamageTaken();
+		}
 	}
 }
 

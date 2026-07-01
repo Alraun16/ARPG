@@ -59,6 +59,36 @@ public:
 	UPROPERTY(BlueprintAssignable, Category = "GAS")
 	FOnAbilitySystemInitialized OnAbilitySystemInitialized;
 	
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void NotifyDamageTaken();
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void NotifyStaminaSpent();
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void NotifySpiritEnergySpent();
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void ResumeHealthRegenNow();
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void ResumeStaminaRegenNow();
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void ResumeSpiritEnergyRegenNow();
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void ResumeAllRegensNow();
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void SetDamageCanBlockHealthRegen(bool bCanBlock);
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void SetDamageCanBlockStaminaRegen(bool bCanBlock);
+
+	UFUNCTION(BlueprintCallable, Category = "GAS|Regen")
+	void SetDamageCanBlockSpiritEnergyRegen(bool bCanBlock);
+	
 protected:
 	virtual void BeginPlay() override;
 	virtual void PossessedBy(AController* NewController) override;
