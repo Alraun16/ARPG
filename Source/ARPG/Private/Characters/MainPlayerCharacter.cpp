@@ -7,9 +7,7 @@
 #include "GameplayEffect.h"
 #include "GAS/Attributes/CoreCharacterAttributeSet.h"
 #include "GAS/Effects/CoreCharacterInitAttributesEffect.h"
-#include "GAS/Effects/HealthRegenEffect.h"
-#include "GAS/Effects/StaminaRegenEffect.h"
-#include "GAS/Effects/SpiritEnergyRegenEffect.h"
+#include "Characters/Components/CharacterRegenComponent.h"
 
 AMainPlayerCharacter::AMainPlayerCharacter()
 {
@@ -17,6 +15,8 @@ AMainPlayerCharacter::AMainPlayerCharacter()
 	SetReplicateMovement(true);
 
 	PrimaryActorTick.bCanEverTick = true;
+
+	CharacterRegenComponent = CreateDefaultSubobject<UCharacterRegenComponent>(TEXT("CharacterRegenComponent"));
 }
 
 void AMainPlayerCharacter::BeginPlay()
@@ -70,6 +70,13 @@ void AMainPlayerCharacter::InitializeAbilitySystem()
 
 	AbilitySystemComponent->InitAbilityActorInfo(ARPGPlayerState, this);
 
+	if (CharacterRegenComponent)
+	{
+		// MainPlayerCharacter отвечает за GAS initialization, потому что AbilitySystemComponent живёт на PlayerState.
+		// RegenComponent получает уже найденный ASC и управляет только lifecycle regen effects.
+		CharacterRegenComponent->Initialize(AbilitySystemComponent);
+	}
+
 	bAbilitySystemInitialized = true;
 
 	BindAttributeChangeDelegates();
@@ -97,10 +104,13 @@ void AMainPlayerCharacter::ApplyStartupEffects()
 	}
 	
 	ApplyGameplayEffectToSelf(UCoreCharacterInitAttributesEffect::StaticClass());
-	
-	ApplyGameplayEffectToSelf(UHealthRegenEffect::StaticClass());
-	ApplyGameplayEffectToSelf(UStaminaRegenEffect::StaticClass());
-	ApplyGameplayEffectToSelf(USpiritEnergyRegenEffect::StaticClass());
+
+	if (CharacterRegenComponent)
+	{
+		// Startup attributes применяются здесь, но lifecycle regen effects принадлежит CharacterRegenComponent.
+		// Так MainPlayerCharacter не зависит от конкретных классов regen GameplayEffect.
+		CharacterRegenComponent->StartDefaultRegens();
+	}
 
 	ARPGPlayerState->SetStartupEffectsApplied(true);
 }

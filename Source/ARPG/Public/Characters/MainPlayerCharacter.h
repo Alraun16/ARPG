@@ -7,6 +7,7 @@
 
 class UAbilitySystemComponent;
 class UGameplayEffect;
+class UCharacterRegenComponent;
 struct FOnAttributeChangeData;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnAbilitySystemInitialized);
@@ -73,6 +74,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<UAbilitySystemComponent> AbilitySystemComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components", meta = (AllowPrivateAccess = "true"))
+	TObjectPtr<UCharacterRegenComponent> CharacterRegenComponent;
+	
 	void InitializeAbilitySystem();
 	void ApplyStartupEffects();
 	void ApplyGameplayEffectToSelf(TSubclassOf<UGameplayEffect> EffectClass);
